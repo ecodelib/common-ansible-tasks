@@ -1,0 +1,81 @@
+---
+- name: Install Apache and Generate Index Page Using Template
+  hosts: all
+  force_handlers: true
+  become:  yes
+
+  vars:
+    source_folder: ./GeneratingWeb
+    destin_folder: /var/www/html
+
+  tasks:
+  - name: Check and Print Linux Family
+    debug: var=ansible_os_family
+
+  - name: Disable password authentication for SSH
+    lineinfile:
+      dest: "/etc/ssh/sshd_config"
+      regex: "^PasswordAuthentication (yes|no)"
+      line: "PasswordAuthentication no"
+
+  - name: Enable public key authentication
+    lineinfile:
+      dest: "/etc/ssh/sshd_config"
+      regex: "^PubkeyAuthentication (yes|no)"
+      line: "PubkeyAuthentication yes"
+
+  - block:  # ==============Ubuntu Block==========
+      - name: Install Apache for Ubuntu
+        yum: name=apache2 state=latest
+      
+       - name: Start WebServer and Enable on Boot for Ubuntu
+         service: name=apache2 state=started enabled=yes
+    when: ansible_os_family == "Debian"
+    register: apache_ubuntu_install_output
+
+  - debug:
+      var: apache_ubuntu_install_output
+
+     
+  - block:  # ==============RedHat Block==========
+      - name: Install Apache for RedHat
+        apt: name=httpd state=latest
+     
+      - name: Start WebServer and Enable on Boot for RedHat
+        service: name=httpd state=started enabled=yes
+    when: ansible_os_family == "RedHat"
+    register: apache_redhat_install_output
+
+  - debug:
+      var: apache_redhat_install_output
+
+
+  - name: Generate index.html file
+    template: src={{ source_folder }}/index.j2 dest={{ destin_folder }}/index.html mode=0555
+    notify:  
+       - Restart Apache Ubuntu
+       - Restart Apache RedHat
+
+  - name: Copy Source files to Web Server
+    copy: src={{ source_folder }}/{{ item }} dest={{ destin_folder }} mode=0555
+    with_fileglob: "{{ source_folder }}/*.jpg"  
+#    copy: src={{ source_folder }}/{{ item }} dest={{ destin_folder }} mode=0555
+#    loop:
+#       - "index.html"
+#        - "kustodiev.jpg"
+#       - "levitan.jpg"
+#       - "serov.jpg"
+#       - "vrubel.jpg"
+    notify:
+       - Restart Apache Ubuntu
+       - Restart Apache RedHat
+
+  handlers:
+  - name: Restart Apache Ubuntu
+    service: name=apache2 state=restarted
+    when: ansible_os_family == "Debian"
+
+
+  - name: Restart Apache RedHat
+    service: name=httpd state=restarted
+    when: ansible_os_family == "RedHat"
