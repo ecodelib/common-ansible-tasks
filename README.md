@@ -1,5 +1,5 @@
 # Common Ansible Tasks.
-*This repo contains Ansible task modules performing some common tasks for both Debian and Redhat families... *
+*This repo contains Ansible task modules performing some common tasks for both Debian and Redhat families...*
 
 ## Prerequisites
 1. Hosts IP addresses should be listed in hosts.txt file.
