@@ -1,11 +1,11 @@
 [DEV_SERVERS]
-lx_dev ansible_host=XX.XX.XX.XX
+lx_dev ansible_host=XX.XX.XX.XX  owner=DevTeam
 
 [STAGE_SERVERS]
-lx_stage ansible_host=XX.XX.XX.XX
+lx_stage ansible_host=XX.XX.XX.XX  owner=StageTeam
 
 [PROD_SERVERS]
-lx_prod ansible_host=XX.XX.XX.XX
+lx_prod ansible_host=XX.XX.XX.XX  owner=ProdTeam
 
 [SERVERS:children]
 STAGE_SERVERS
